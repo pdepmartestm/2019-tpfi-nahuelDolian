@@ -1,3 +1,7 @@
+import Text.Show.Functions
+
+
+
 data Pirata = Pirata {nombre:: String, botin :: [Tesoro]} deriving (Show)
 
 type Tesoro = (String, Int)
@@ -20,6 +24,9 @@ esValioso  = (>100). snd
 agregarTesoro :: Pirata -> Tesoro -> Pirata
 agregarTesoro pirata unTesoro = pirata {botin = (botin pirata)++ [unTesoro]}
 
+agregarTesoros :: Pirata->[Tesoro]->Pirata
+agregarTesoros unPirata unBotin = unPirata {botin = (botin unPirata)++ unBotin}
+
 susTesorosValiosos :: [Tesoro]->[Tesoro]
 susTesorosValiosos botin = filter esValioso botin
 
@@ -36,6 +43,14 @@ tesoroIgualNombre nombre1 tesoro = nombre1== (fst tesoro)
 adquirirTesoro :: Pirata->Tesoro->Pirata
 adquirirTesoro unPirata unTesoro = unPirata{botin = ((++ [unTesoro]).botin) unPirata}
 
+tienenElMismoTesoro :: Pirata->Pirata->Bool
+tienenElMismoTesoro pirata1 pirata2 = any (loTiene pirata2) (botin pirata1)
+
+loTiene :: Pirata->Tesoro->Bool
+loTiene pirata  tesoro = any (igualNombreDistintoValor tesoro) botin pirata
+
+igualNombreDistintoValor :: Tesoro->Tesoro->Bool
+igualNombreDistintoValor tesoro1 tesoro2 =   tesoroIgualNombre (fst tesoro1) tesoro2
 
 
 
@@ -52,15 +67,30 @@ anneBonny = Pirata{
 			-- para perder los mas valiosos filter >100
 			-- agregar un elemento a una lista -> [a] ++ [b,x] = [a,b,x]
 
+
+
 -- temporada de saqueos bbcita
 
---type FormaDeSaqueo = String
---saquear :: Pirata->FormaDeSaqueo->[Tesoro]->Pirata
---saquear unPirata unFormaDeSaqueo tesoros = fromaDeSaqueo unaformaDeSaqueo unPirata tesoros
+type FormaDeSaqueo = Tesoro ->Bool
+saquear :: Pirata->FormaDeSaqueo->[Tesoro]->Pirata
+saquear unPirata unaFormaDeSaqueo tesoros = agregarTesoros unPirata (filter unaFormaDeSaqueo  tesoros)
 
-saqueoValioso :: Pirata->[Tesoro]->Pirata
-saqueoValioso unPirata unBotin= unPirata{botin= susTesorosValiosos unBotin ++ botin unPirata}
 
-saqueoEspecifico :: Pirata->[Tesoro]->String->Pirata
-saqueoEspecifico unPirata botin nombre = agregarTesoro (filter (tesoroIgualNombre nombre) botin) unPirata 
 
+--saqueoValioso :: Pirata->[Tesoro]->Pirata
+--saqueoValioso unPirata unBotin= agregarTesoro unPirata (susTesorosValiosos unBotin)
+
+--saqueoEspecifico :: Pirata->[Tesoro]->String->Pirata
+--saqueoEspecifico unPirata botin nombre = agregarTesoro unPirata (filter (tesoroIgualNombre nombre) botin)  
+
+--saqueoDeCorazon unPirata unBotin = unPirata
+
+
+data Tripulacion = Tripulacion {formaDeSaqueo :: FormaDeSaqueo, tripulantes :: [Pirata]} deriving(Show)
+
+--saqueoEnGrupo :: Tripulacion->Lugar->Tripulacion
+saqueoEnGrupo tripulacion unLugar = map (saquear (formaDeSaqueo tripulacion) unLugar) tripulacion 
+
+type Lugar = (String,[Tesoro])
+
+--islaTortuga = Lugar {[("frascusi de Arena",1),("ron",25)]}
